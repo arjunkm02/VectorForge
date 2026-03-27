@@ -1,0 +1,769 @@
+// =============================================================================
+// VectorForge — style.scss
+// Modular SCSS: variables → mixins → layout → components → states
+// Compile: sass style.scss style.css
+// =============================================================================
+
+// =============================================================================
+// 1. VARIABLES
+// =============================================================================
+
+// ── Color palette ─────────────────────────────────────────────────────────
+$bg-0:      #0a0a12;      // App background (darkest)
+$bg-1:      #11111c;      // Panels, toolbar
+$bg-2:      #18182a;      // Panel inner groups
+$bg-3:      #1f1f35;      // Card-level UI
+$bg-hover:  #262640;      // Hover state surfaces
+$bg-canvas: #13131e;      // The main canvas area
+
+$accent:    #7c6ffa;      // Primary — cosmic purple
+$accent-h:  #9d93fb;      // Primary hover
+$accent-2:  #fa6f8f;      // Secondary — coral
+$accent-3:  #6ffad5;      // Tertiary — teal
+
+$text-0:    #e8e8f4;      // Primary text
+$text-1:    #9292b0;      // Secondary / muted
+$text-2:    #56566e;      // Disabled / hints
+
+$border:    #22223a;      // Subtle dividers
+$border-2:  #2e2e4a;      // More visible borders
+
+$success:   #6ffa99;
+$warning:   #fad56f;
+$danger:    #fa6f6f;
+
+// ── Canvas/Editor colors (used by JS, defined here for reference) ──────────
+$handle-fill:      #ffffff;
+$handle-stroke:    $accent;
+$selection-fill:   rgba($accent, 0.08);
+$selection-border: $accent;
+$snap-color:       $accent-2;
+$grid-minor:       rgba(255, 255, 255, 0.04);
+$grid-major:       rgba(255, 255, 255, 0.08);
+
+// ── Spacing ───────────────────────────────────────────────────────────────
+$space-xs:  4px;
+$space-sm:  8px;
+$space-md:  12px;
+$space-lg:  16px;
+$space-xl:  24px;
+
+// ── Dimensions ────────────────────────────────────────────────────────────
+$panel-width:    240px;
+$toolbar-height: 48px;
+$statusbar-h:    24px;
+
+// ── Typography ────────────────────────────────────────────────────────────
+$font-ui:   'Syne', sans-serif;
+$font-mono: 'Space Mono', 'Courier New', monospace;
+
+$text-xs:   9px;
+$text-sm:   10px;
+$text-base: 12px;
+$text-lg:   14px;
+
+// ── Motion ────────────────────────────────────────────────────────────────
+$trans-fast:   100ms ease;
+$trans-normal: 150ms ease;
+$trans-slow:   250ms ease;
+
+// ── Shape ─────────────────────────────────────────────────────────────────
+$radius-sm: 3px;
+$radius:    6px;
+$radius-lg: 10px;
+
+// =============================================================================
+// 2. MIXINS
+// =============================================================================
+
+// Panel chrome
+@mixin panel-chrome {
+  background: $bg-1;
+  border: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// Mono label above an input
+@mixin prop-label {
+  font-size: $text-xs;
+  font-family: $font-mono;
+  color: $text-2;
+  letter-spacing: 0.05em;
+}
+
+// Focus ring for keyboard accessibility
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 1.5px solid $accent;
+    outline-offset: 1px;
+  }
+}
+
+// Compact button
+@mixin icon-btn($size: 28px) {
+  width: $size;
+  height: $size;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background $trans-normal, color $trans-normal;
+  color: $text-1;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: $font-ui;
+  &:hover { background: $bg-hover; color: $text-0; }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+
+// Truncate overflow text
+@mixin truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Glass surface
+@mixin glass($opacity: 0.85) {
+  background: rgba($bg-2, $opacity);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+// Section title (uppercase label)
+@mixin section-title {
+  font-size: $text-xs;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $text-2;
+}
+
+// =============================================================================
+// 3. CSS CUSTOM PROPERTIES (runtime-accessible from JS)
+// =============================================================================
+:root {
+  --bg-0:      #{$bg-0};
+  --bg-1:      #{$bg-1};
+  --bg-2:      #{$bg-2};
+  --bg-3:      #{$bg-3};
+  --bg-hover:  #{$bg-hover};
+  --bg-canvas: #{$bg-canvas};
+  --accent:    #{$accent};
+  --accent-h:  #{$accent-h};
+  --accent-2:  #{$accent-2};
+  --accent-3:  #{$accent-3};
+  --text-0:    #{$text-0};
+  --text-1:    #{$text-1};
+  --text-2:    #{$text-2};
+  --border:    #{$border};
+  --border-2:  #{$border-2};
+  --scrollbar: #{darken($border-2, 2%)};
+  --panel-w:   #{$panel-width};
+  --toolbar-h: #{$toolbar-height};
+  --statusbar-h: #{$statusbar-h};
+  --radius:    #{$radius};
+  --radius-sm: #{$radius-sm};
+  --font-ui:   #{$font-ui};
+  --font-mono: #{$font-mono};
+  --trans:     #{$trans-normal};
+}
+
+// =============================================================================
+// 4. RESET & BASE
+// =============================================================================
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: $bg-0;
+}
+
+body {
+  font-family: $font-ui;
+  color: $text-0;
+  font-size: $text-base;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: $font-ui;
+  font-size: $text-sm;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-1;
+  transition: color $trans-normal, background $trans-normal;
+  @include focus-ring;
+  &:hover { color: $text-0; }
+  &:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+}
+
+// ── Form inputs ─────────────────────────────────────────────────────────────
+input, select, textarea {
+  font-family: $font-mono;
+  font-size: 11px;
+  background: $bg-0;
+  border: 1px solid $border-2;
+  color: $text-0;
+  border-radius: $radius-sm;
+  outline: none;
+  width: 100%;
+  transition: border-color $trans-fast, box-shadow $trans-fast;
+  @include focus-ring;
+
+  &:focus {
+    border-color: $accent;
+    box-shadow: 0 0 0 2px rgba($accent, 0.12);
+  }
+}
+
+input[type="number"],
+input[type="text"] {
+  padding: 4px 6px;
+  height: 26px;
+}
+
+input[type="color"] {
+  padding: 1px 2px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  border-radius: $radius-sm;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  accent-color: $accent;
+  cursor: pointer;
+}
+
+select {
+  padding: 4px 6px;
+  height: 26px;
+  appearance: none;
+  // SVG chevron
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239292b0'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 7px;
+  padding-right: 22px;
+  cursor: pointer;
+}
+
+textarea {
+  padding: 5px 7px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+// ── Scrollbar ────────────────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: darken($border-2, 4%);
+  border-radius: 3px;
+  &:hover { background: $border-2; }
+}
+
+// =============================================================================
+// 5. LAYOUT
+// =============================================================================
+#app {
+  display: grid;
+  grid-template-rows: $toolbar-height 1fr $statusbar-h;
+  grid-template-columns: 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+#workspace {
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: $panel-width 1fr $panel-width;
+  overflow: hidden;
+  position: relative;
+}
+
+// =============================================================================
+// 6. TOOLBAR
+// =============================================================================
+#toolbar {
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+  padding: 0 $space-md;
+  background: $bg-1;
+  border-bottom: 1px solid $border;
+  user-select: none;
+  z-index: 100;
+
+  // Logo
+  .tb-logo {
+    font-weight: 700;
+    font-size: 13px;
+    color: $accent;
+    letter-spacing: 0.05em;
+    margin-right: $space-xs;
+    white-space: nowrap;
+    span { color: $accent-2; }
+  }
+
+  // Divider
+  .tb-divider {
+    width: 1px;
+    height: 24px;
+    background: $border;
+    margin: 0 $space-xs;
+    flex-shrink: 0;
+  }
+
+  .tb-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  // Generic toolbar button
+  .tb-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 9px;
+    height: 30px;
+    border-radius: $radius-sm;
+    font-size: 11px;
+    color: $text-1;
+    white-space: nowrap;
+
+    &:hover { background: $bg-hover; color: $text-0; }
+    &.danger:hover { color: $accent-2; }
+  }
+
+  .tb-spacer { flex: 1; }
+}
+
+// ── Tool buttons group ────────────────────────────────────────────────────────
+#tool-buttons {
+  display: flex;
+  gap: 2px;
+  background: $bg-2;
+  border-radius: $radius;
+  padding: 3px;
+  border: 1px solid $border;
+
+  .tool-btn {
+    @include icon-btn(30px);
+
+    &.active {
+      background: $accent;
+      color: #fff;
+      &:hover { background: $accent-h; }
+    }
+
+    .tool-icon {
+      font-size: 14px;
+      line-height: 1;
+      display: block;
+    }
+  }
+}
+
+// ── Zoom controls ────────────────────────────────────────────────────────────
+.zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: $bg-2;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 3px;
+
+  button {
+    @include icon-btn(24px);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  #zoom-display {
+    font-family: $font-mono;
+    font-size: 11px;
+    color: $text-1;
+    width: 42px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: $radius-sm;
+    padding: 2px 4px;
+    transition: color $trans-normal;
+    &:hover { color: $accent; }
+  }
+}
+
+// =============================================================================
+// 7. PANELS
+// =============================================================================
+.panel {
+  @include panel-chrome;
+}
+
+#layers-panel {
+  border-right: 1px solid $border;
+  border-left: none;
+  border-top: none;
+  border-bottom: none;
+}
+
+#props-panel {
+  border-left: 1px solid $border;
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px $space-md 8px;
+  border-bottom: 1px solid $border;
+  @include section-title;
+  flex-shrink: 0;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+// =============================================================================
+// 8. LAYERS PANEL
+// =============================================================================
+#layers-list { padding: $space-xs 0; }
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px $space-md;
+  cursor: pointer;
+  transition: background $trans-normal;
+  user-select: none;
+  min-height: 30px;
+
+  &:hover { background: $bg-hover; }
+
+  &.selected {
+    background: rgba($accent, 0.1);
+    border-left: 2px solid $accent;
+    padding-left: $space-sm + 2px;
+
+    .layer-name { color: $text-0; }
+    .layer-icon { color: $accent; }
+  }
+
+  .layer-icon {
+    font-size: 11px;
+    color: $text-2;
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .layer-name {
+    flex: 1;
+    font-size: 11px;
+    color: $text-1;
+    @include truncate;
+  }
+
+  .layer-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity $trans-normal;
+  }
+
+  &:hover .layer-actions,
+  &.selected .layer-actions { opacity: 1; }
+
+  .layer-vis,
+  .layer-lock {
+    @include icon-btn(20px);
+    font-size: 10px;
+  }
+}
+
+// =============================================================================
+// 9. CANVAS CONTAINER
+// =============================================================================
+#canvas-container {
+  position: relative;
+  background: $bg-canvas;
+  overflow: hidden;
+  // Subtle atmospheric gradients
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba($accent,   0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba($accent-2, 0.03) 0%, transparent 50%);
+
+  #main-canvas {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+  }
+}
+
+// =============================================================================
+// 10. PROPERTIES PANEL
+// =============================================================================
+#props-content { padding: 0; }
+
+.props-empty {
+  padding: $space-xl $space-lg;
+  text-align: center;
+  color: $text-2;
+  font-size: 11px;
+  line-height: 1.7;
+
+  p::before {
+    content: '⊡';
+    display: block;
+    font-size: 24px;
+    margin-bottom: $space-sm;
+    opacity: 0.3;
+  }
+}
+
+.prop-section {
+  padding: $space-md;
+  border-bottom: 1px solid $border;
+}
+
+.prop-section-title {
+  @include section-title;
+  margin-bottom: $space-sm;
+}
+
+.prop-row {
+  margin-bottom: 7px;
+  &:last-child { margin-bottom: 0; }
+
+  label {
+    @include prop-label;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-xs;
+    label { grid-column: auto; }
+  }
+}
+
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  input[type="color"] { flex-shrink: 0; }
+  input[type="text"]  { flex: 1; }
+}
+
+.no-color-btn {
+  @include icon-btn(26px);
+  border: 1px solid $border-2;
+  font-size: 14px;
+  flex-shrink: 0;
+  &:hover { border-color: $accent-2; color: $accent-2; }
+}
+
+.arrange-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 4px;
+
+  button {
+    flex: 1;
+    height: 28px;
+    border: 1px solid $border-2;
+    border-radius: $radius-sm;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    &:hover {
+      background: $bg-hover;
+      border-color: $accent;
+      color: $accent;
+    }
+  }
+}
+
+// =============================================================================
+// 11. TEXT EDITOR OVERLAY
+// =============================================================================
+.text-editor-overlay {
+  position: absolute;
+  transform-origin: top left;
+  z-index: 1000;
+  pointer-events: none;
+
+  &.hidden { display: none; }
+
+  textarea {
+    width: 100%;
+    height: 100%;
+    min-height: 30px;
+    background: rgba($bg-0, 0.85);
+    border: 1.5px dashed $accent;
+    border-radius: $radius-sm;
+    color: $text-0;
+    resize: none;
+    outline: none;
+    pointer-events: all;
+    padding: 4px;
+    @include glass(0.85);
+  }
+}
+
+// =============================================================================
+// 12. STATUS BAR
+// =============================================================================
+#statusbar {
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  gap: $space-lg;
+  padding: 0 $space-md;
+  background: $bg-1;
+  border-top: 1px solid $border;
+  font-size: $text-xs;
+  color: $text-2;
+  font-family: $font-mono;
+  user-select: none;
+
+  span { white-space: nowrap; }
+  #status-coords { min-width: 100px; }
+}
+
+// ── Keyboard badge ────────────────────────────────────────────────────────────
+kbd {
+  display: inline-block;
+  padding: 1px 4px;
+  background: $bg-3;
+  border: 1px solid $border-2;
+  border-radius: 3px;
+  font-family: $font-mono;
+  font-size: $text-xs;
+  color: $text-2;
+}
+
+// =============================================================================
+// 13. CONTEXT MENU
+// =============================================================================
+.ctx-menu {
+  position: fixed;
+  background: $bg-2;
+  border: 1px solid $border-2;
+  border-radius: $radius;
+  padding: 5px 0;
+  min-width: 160px;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+
+  .ctx-item {
+    padding: 7px 14px;
+    cursor: pointer;
+    font-size: $text-base;
+    color: $text-1;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: background $trans-fast, color $trans-fast;
+
+    &:hover { background: $bg-hover; color: $text-0; }
+
+    .shortcut {
+      color: $text-2;
+      font-family: $font-mono;
+      font-size: $text-xs;
+    }
+  }
+
+  .ctx-divider {
+    height: 1px;
+    background: $border;
+    margin: 4px 0;
+  }
+}
+
+// =============================================================================
+// 14. SPLASH SCREEN
+// =============================================================================
+#splash {
+  position: fixed;
+  inset: 0;
+  background: $bg-0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  flex-direction: column;
+  gap: $space-md;
+  transition: opacity 400ms ease;
+
+  &.fade { opacity: 0; pointer-events: none; }
+
+  .splash-logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: $accent;
+    letter-spacing: 0.05em;
+    span { color: $accent-2; }
+  }
+
+  .splash-sub {
+    font-size: 11px;
+    color: $text-2;
+    font-family: $font-mono;
+  }
+
+  .splash-bar {
+    width: 120px;
+    height: 2px;
+    background: $border;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: $space-sm;
+
+    .splash-bar-fill {
+      height: 100%;
+      background: $accent;
+      width: 0%;
+      animation: splashLoad 600ms ease forwards;
+    }
+  }
+}
+
+@keyframes splashLoad {
+  to { width: 100%; }
+}
+
+// =============================================================================
+// 15. UTILITY CLASSES
+// =============================================================================
+.hidden         { display: none !important; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+}
+.truncate { @include truncate; }
+.mono { font-family: $font-mono; }
+.accent { color: $accent; }
+.muted  { color: $text-2; }

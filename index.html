@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectorForge — Design Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ======================================================================
+       Compiled from style.scss
+       Theme: Deep-space dark, purple accent system, monospace precision
+    ====================================================================== */
+
+        /* ── Variables ─────────────────────────────────────────────────────── */
+        :root {
+            --bg-0: #0a0a12;
+            --bg-1: #11111c;
+            --bg-2: #18182a;
+            --bg-3: #1f1f35;
+            --bg-hover: #262640;
+            --bg-canvas: #13131e;
+            --accent: #7c6ffa;
+            --accent-h: #9d93fb;
+            --accent-2: #fa6f8f;
+            --accent-3: #6ffad5;
+            --text-0: #e8e8f4;
+            --text-1: #9292b0;
+            --text-2: #56566e;
+            --border: #22223a;
+            --border-2: #2e2e4a;
+            --scrollbar: #2a2a44;
+            --panel-w: 240px;
+            --toolbar-h: 48px;
+            --statusbar-h: 24px;
+            --radius: 6px;
+            --radius-sm: 3px;
+            --font-ui: 'Syne', sans-serif;
+            --font-mono: 'Space Mono', 'Courier New', monospace;
+            --trans: 150ms ease;
+        }
+
+        /* ── Reset ─────────────────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-0);
+        }
+
+        body {
+            font-family: var(--font-ui);
+            color: var(--text-0);
+            font-size: 12px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button {
+            font-family: var(--font-ui);
+            font-size: 11px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-1);
+            transition: color var(--trans), background var(--trans);
+        }
+
+        button:hover {
+            color: var(--text-0);
+        }
+
+        button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        input,
+        select,
+        textarea {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            background: var(--bg-0);
+            border: 1px solid var(--border-2);
+            color: var(--text-0);
+            border-radius: var(--radius-sm);
+            outline: none;
+            transition: border-color var(--trans);
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--accent);
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            padding: 4px 6px;
+            height: 26px;
+        }
+
+        input[type="color"] {
+            padding: 1px 2px;
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            accent-color: var(--accent);
+        }
+
+        select {
+            padding: 4px 6px;
+            height: 26px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239292b0'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 7px;
+            padding-right: 22px;
+            cursor: pointer;
+        }
+
+        textarea {
+            padding: 5px 7px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-2);
+        }
+
+        /* ── App Layout ────────────────────────────────────────────────────── */
+        #app {
+            display: grid;
+            grid-template-rows: var(--toolbar-h) 1fr var(--statusbar-h);
+            grid-template-columns: 1fr;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ── Toolbar ───────────────────────────────────────────────────────── */
+        #toolbar {
+            grid-row: 1;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 10px;
+            background: var(--bg-1);
+            border-bottom: 1px solid var(--border);
+            user-select: none;
+            z-index: 100;
+        }
+
+        .tb-logo {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+            margin-right: 6px;
+            white-space: nowrap;
+        }
+
+        .tb-logo span {
+            color: var(--accent-2);
+        }
+
+        .tb-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            margin: 0 6px;
+            flex-shrink: 0;
+        }
+
+        .tb-group {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .tb-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 9px;
+            height: 30px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            color: var(--text-1);
+            white-space: nowrap;
+        }
+
+        .tb-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-0);
+        }
+
+        .tb-btn.danger:hover {
+            color: var(--accent-2);
+        }
+
+        /* ── Tool buttons ──────────────────────────────────────────────────── */
+        #tool-buttons {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-2);
+            border-radius: var(--radius);
+            padding: 3px;
+            border: 1px solid var(--border);
+        }
+
+        .tool-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--trans), color var(--trans);
+            color: var(--text-1);
+        }
+
+        .tool-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-0);
+        }
+
+        .tool-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .tool-btn .tool-icon {
+            font-size: 14px;
+            line-height: 1;
+            display: block;
+        }
+
+        /* Zoom controls */
+        .zoom-group {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 3px;
+        }
+
+        .zoom-group button {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .zoom-group button:hover {
+            background: var(--bg-hover);
+            color: var(--text-0);
+        }
+
+        #zoom-display {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-1);
+            width: 42px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            padding: 2px 4px;
+            transition: color var(--trans);
+        }
+
+        #zoom-display:hover {
+            color: var(--accent);
+        }
+
+        .tb-spacer {
+            flex: 1;
+        }
+
+        /* ── Workspace ─────────────────────────────────────────────────────── */
+        #workspace {
+            grid-row: 2;
+            display: grid;
+            grid-template-columns: var(--panel-w) 1fr var(--panel-w);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Panels ────────────────────────────────────────────────────────── */
+        .panel {
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #layers-panel {
+            border-right: 1px solid var(--border);
+            border-left: none;
+            border-top: none;
+            border-bottom: none;
+        }
+
+        #props-panel {
+            border-left: 1px solid var(--border);
+            border-right: none;
+            border-top: none;
+            border-bottom: none;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-2);
+            flex-shrink: 0;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* ── Layers panel ──────────────────────────────────────────────────── */
+        #layers-list {
+            padding: 4px 0;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 0;
+            transition: background var(--trans);
+            user-select: none;
+            min-height: 30px;
+        }
+
+        .layer-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .layer-item.selected {
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            border-left: 2px solid var(--accent);
+            padding-left: 8px;
+        }
+
+        .layer-icon {
+            font-size: 11px;
+            color: var(--text-2);
+            width: 14px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .layer-name {
+            flex: 1;
+            font-size: 11px;
+            color: var(--text-1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .layer-item.selected .layer-name {
+            color: var(--text-0);
+        }
+
+        .layer-actions {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity var(--trans);
+        }
+
+        .layer-item:hover .layer-actions,
+        .layer-item.selected .layer-actions {
+            opacity: 1;
+        }
+
+        .layer-vis,
+        .layer-lock {
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .layer-vis:hover,
+        .layer-lock:hover {
+            background: var(--bg-3);
+        }
+
+        /* ── Canvas container ──────────────────────────────────────────────── */
+        #canvas-container {
+            position: relative;
+            background: var(--bg-canvas);
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(124, 111, 250, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(250, 111, 143, 0.03) 0%, transparent 50%);
+        }
+
+        #main-canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* ── Properties panel ──────────────────────────────────────────────── */
+        #props-content {
+            padding: 0;
+        }
+
+        .props-empty {
+            padding: 24px 16px;
+            text-align: center;
+            color: var(--text-2);
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .props-empty p::before {
+            content: '⊡';
+            display: block;
+            font-size: 24px;
+            margin-bottom: 8px;
+            opacity: 0.3;
+        }
+
+        .prop-section {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .prop-section-title {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-2);
+            margin-bottom: 8px;
+        }
+
+        .prop-row {
+            margin-bottom: 7px;
+        }
+
+        .prop-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .prop-row label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 10px;
+            color: var(--text-2);
+            font-family: var(--font-mono);
+        }
+
+        .prop-row.two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .prop-row.two-col label {
+            grid-column: auto;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .color-row input[type="color"] {
+            flex-shrink: 0;
+        }
+
+        .color-row input[type="text"] {
+            flex: 1;
+        }
+
+        .no-color-btn {
+            width: 26px;
+            height: 26px;
+            border: 1px solid var(--border-2);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            color: var(--text-2);
+        }
+
+        .no-color-btn:hover {
+            border-color: var(--accent-2);
+            color: var(--accent-2);
+        }
+
+        .arrange-buttons {
+            display: flex;
+            gap: 4px;
+            flex-direction: row !important;
+        }
+
+        .arrange-buttons button {
+            flex: 1;
+            height: 28px;
+            border: 1px solid var(--border-2);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .arrange-buttons button:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Text editor overlay ───────────────────────────────────────────── */
+        .text-editor-overlay {
+            position: absolute;
+            transform-origin: top left;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .text-editor-overlay.hidden {
+            display: none;
+        }
+
+        .text-editor-overlay textarea {
+            width: 100%;
+            height: 100%;
+            min-height: 30px;
+            background: rgba(10, 10, 18, 0.85);
+            border: 1.5px dashed var(--accent);
+            border-radius: var(--radius-sm);
+            color: var(--text-0);
+            resize: none;
+            outline: none;
+            pointer-events: all;
+            padding: 4px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* ── Status bar ────────────────────────────────────────────────────── */
+        #statusbar {
+            grid-row: 3;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 12px;
+            background: var(--bg-1);
+            border-top: 1px solid var(--border);
+            font-size: 10px;
+            color: var(--text-2);
+            font-family: var(--font-mono);
+            user-select: none;
+        }
+
+        #statusbar span {
+            white-space: nowrap;
+        }
+
+        #status-coords {
+            min-width: 100px;
+        }
+
+        /* ── Tooltip helper ────────────────────────────────────────────────── */
+        [title] {
+            position: relative;
+        }
+
+        /* ── Context menu (if ever needed) ────────────────────────────────── */
+        .ctx-menu {
+            position: fixed;
+            background: var(--bg-2);
+            border: 1px solid var(--border-2);
+            border-radius: var(--radius);
+            padding: 5px 0;
+            min-width: 160px;
+            z-index: 9999;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .ctx-item {
+            padding: 7px 14px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ctx-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-0);
+        }
+
+        .ctx-item .shortcut {
+            color: var(--text-2);
+            font-family: var(--font-mono);
+            font-size: 10px;
+        }
+
+        .ctx-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        /* ── Keyboard shortcut badge ───────────────────────────────────────── */
+        kbd {
+            display: inline-block;
+            padding: 1px 4px;
+            background: var(--bg-3);
+            border: 1px solid var(--border-2);
+            border-radius: 3px;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--text-2);
+        }
+
+        /* ── Loading splash ────────────────────────────────────────────────── */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 12px;
+            transition: opacity 400ms ease;
+        }
+
+        #splash.fade {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        .splash-logo span {
+            color: var(--accent-2);
+        }
+
+        .splash-sub {
+            font-size: 11px;
+            color: var(--text-2);
+            font-family: var(--font-mono);
+        }
+
+        .splash-bar {
+            width: 120px;
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .splash-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            animation: splashLoad 600ms ease forwards;
+        }
+
+        @keyframes splashLoad {
+            to {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Loading splash -->
+    <div id="splash">
+        <div class="splash-logo">Vector<span>Forge</span></div>
+        <div class="splash-sub">Initializing engine...</div>
+        <div class="splash-bar">
+            <div class="splash-bar-fill"></div>
+        </div>
+    </div>
+
+    <div id="app">
+
+        <!-- ── Toolbar ─────────────────────────────────────────────────── -->
+        <header id="toolbar">
+
+            <div class="tb-logo">Vector<span>Forge</span></div>
+
+            <div class="tb-divider"></div>
+
+            <!-- Drawing tools -->
+            <div id="tool-buttons" role="toolbar" aria-label="Drawing tools">
+                <!-- Buttons injected by UIManager -->
+            </div>
+
+            <div class="tb-divider"></div>
+
+            <!-- Undo / Redo -->
+            <div class="tb-group">
+                <button id="btn-undo" class="tb-btn" title="Undo (Ctrl+Z)">↩ Undo</button>
+                <button id="btn-redo" class="tb-btn" title="Redo (Ctrl+Y)">↪ Redo</button>
+            </div>
+
+            <div class="tb-divider"></div>
+
+            <!-- File ops -->
+            <div class="tb-group">
+                <button id="btn-save" class="tb-btn" title="Save as JSON">⬇ Save</button>
+                <button id="btn-load" class="tb-btn" title="Load JSON">⬆ Load</button>
+                <button id="btn-export" class="tb-btn" title="Export PNG">↗ PNG</button>
+            </div>
+
+            <div class="tb-spacer"></div>
+
+            <!-- View controls -->
+            <div class="tb-group">
+                <button id="btn-fit" class="tb-btn" title="Fit to content (Ctrl+0)">⊡ Fit</button>
+                <button id="btn-clear" class="tb-btn danger" title="Clear canvas">✕ Clear</button>
+            </div>
+
+            <div class="tb-divider"></div>
+
+            <!-- Zoom -->
+            <div class="zoom-group">
+                <button id="btn-zoom-out" title="Zoom out">−</button>
+                <span id="zoom-display" title="Reset zoom (click)">100%</span>
+                <button id="btn-zoom-in" title="Zoom in">+</button>
+            </div>
+
+        </header>
+
+        <!-- ── Workspace ───────────────────────────────────────────────── -->
+        <main id="workspace">
+
+            <!-- Layers panel -->
+            <aside id="layers-panel" class="panel">
+                <div class="panel-header">
+                    <span>Layers</span>
+                    <span id="layer-count" style="color:var(--text-2)">0</span>
+                </div>
+                <div class="panel-body">
+                    <div id="layers-list"></div>
+                </div>
+            </aside>
+
+            <!-- Canvas area -->
+            <div id="canvas-container">
+                <canvas id="main-canvas"></canvas>
+                <!-- Text editor overlay injected by UIManager -->
+            </div>
+
+            <!-- Properties panel -->
+            <aside id="props-panel" class="panel">
+                <div class="panel-header">
+                    <span>Properties</span>
+                </div>
+                <div class="panel-body">
+                    <div id="props-content">
+                        <!-- Injected by UIManager -->
+                    </div>
+                </div>
+            </aside>
+
+        </main>
+
+        <!-- ── Status bar ──────────────────────────────────────────────── -->
+        <footer id="statusbar">
+            <span id="status-tool">Tool: Select</span>
+            <span id="status-coords">x: 0 y: 0</span>
+            <span id="status-selected">Nothing selected</span>
+            <span style="flex:1"></span>
+            <span><kbd>V</kbd> Select &nbsp; <kbd>R</kbd> Rect &nbsp; <kbd>E</kbd> Ellipse &nbsp; <kbd>L</kbd> Line
+                &nbsp; <kbd>T</kbd> Text &nbsp; Space+Drag Pan</span>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+
+    <script>
+    // Dismiss splash + live status bar updates
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const splash = document.getElementById('splash');
+        splash.classList.add('fade');
+        setTimeout(() => splash.remove(), 420);
+      }, 700);
+    });
+
+    // Status bar: mouse position
+    document.getElementById('main-canvas')?.addEventListener('mousemove', (e) => {
+      const app = window.app;
+      if (!app) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const wp = app.engine.screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+      document.getElementById('status-coords').textContent =
+        `x: ${Math.round(wp.x)}  y: ${Math.round(wp.y)}`;
+    });
+
+    // Status bar: tool name + selection
+    document.addEventListener('DOMContentLoaded', () => {
+      // Wait for app init
+      setTimeout(() => {
+        const app = window.app;
+        if (!app) return;
+
+        app.tools.on('change', (t) => {
+          document.getElementById('status-tool').textContent =
+            `Tool: ${t.charAt(0).toUpperCase() + t.slice(1)}`;
+        });
+
+        app.state.on('selection', () => {
+          const sel = app.state.getSelected();
+          const countEl = document.getElementById('layer-count');
+          const selEl   = document.getElementById('status-selected');
+          if (countEl) countEl.textContent = app.state.elements.length;
+          if (sel.length === 0) selEl.textContent = 'Nothing selected';
+          else if (sel.length === 1) selEl.textContent = `${sel[0].name} selected`;
+          else selEl.textContent = `${sel.length} elements selected`;
+        });
+
+        app.state.on('change', () => {
+          const countEl = document.getElementById('layer-count');
+          if (countEl) countEl.textContent = app.state.elements.length;
+        });
+      }, 100);
+    });
+    </script>
+</body>
+
+</html>
